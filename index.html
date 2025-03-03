@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <!-- Swiper JS -->
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+</head>
+<style>
+    *{
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+    ul{
+        li{
+            list-style-type: none;
+        }
+    }
+    html,body{
+        font-size: 62.5%;
+    }
+    .link_btn_fixed{
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        z-index: 10;
+    }
+    .link_btn{
+        width: 92%;
+        max-width: 750px;
+        margin: 40px auto 0;
+        a{
+            width: 100%;
+            display: block;
+            border: 1px solid #333;
+            background-color: #333;
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+            text-decoration: none;
+            padding: 20px;
+
+            &:hover{
+                opacity: 0.8;
+            }
+        }
+    }
+    #main{
+        width: 96vw;
+        max-width: 750px;
+        margin: 0 auto;
+    }
+    .filters{
+        margin: 40px 0;
+        .list{
+            width: 80%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin: 0 auto;
+        }
+        .item{
+            border: 1px solid #ccc;
+            
+            button{
+                width: 100%;
+                appearance: none;
+                background-color: transparent;
+                border: 2px solid transparent;
+                text-align: center;
+                padding: 5px 0;
+                img{
+                    width: 100%;
+                }
+                &:hover{
+                    opacity: 0.8;
+                }
+                &.selected{
+                    border: 2px solid #000;
+                }
+            }
+        }
+    }
+    .monsters{
+        margin-bottom: 50px;
+        .list{
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        .item{
+            position: relative;
+            img{
+                width: 100%;
+            }
+            &::before{
+                content: '';
+                display: block;
+                background-color: rgba(255,255,255, .3);
+                width: 32px;
+                height: 32px;
+                position: absolute;
+                right: 0;
+                bottom: 0;
+            }
+            &::after{
+                content: '';
+                display: block;
+                width: 24px;
+                height: 24px;
+                position: absolute;
+                bottom: 4px;
+                right: 4px;
+                background: url('./images/icon/icon-zoom.png') center center/100% no-repeat;
+            }
+            &:hover{
+                opacity: 0.5;
+                cursor: zoom-in;
+            }
+        }
+    }
+    #modal{
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        /* display: none; */
+        .modal_inner{
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .overlay {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        .swiper{
+            width: 100%;
+            max-width: 500px;
+            max-height: 84vh;
+            
+            img{
+                width: 100%;
+            }
+        }
+
+        .swiper-button-next, .swiper-button-prev {
+            color: #fff; /* ボタンの色を設定 */
+            z-index: 10000; /* 他の要素の上に表示 */
+            opacity: 1; /* ボタンの透明度を100%に */
+            width: auto;
+            top: 50%; /* ボタンを上下の中央に配置 */
+            transform: translateY(-50%);
+        }
+
+        .swiper-button-next {
+            right: 5px; /* 画面右端に配置 */
+        }
+
+        .swiper-button-prev {
+            left: 5px; /* 画面左端に配置 */
+        }
+        .modal_close {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 10001;
+        }
+
+        .modal_close::before,
+        .modal_close::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 2px;
+            background-color: #fff;
+            transform-origin: center;
+        }
+
+        .modal_close::before {
+            transform: translate(-50%, -50%) rotate(45deg); /* バツの左上から右下の線 */
+        }
+
+        .modal_close::after {
+            transform: translate(-50%, -50%) rotate(-45deg); /* バツの右上から左下の線 */
+        }
+    }
+    @media (min-width: 751px){
+        #modal{
+            .swiper{
+                width: 80%;
+                height: auto;
+                max-height: 100svh;
+            }
+            .swiper-slide{
+                width: auto;
+            }
+            .modal_close {
+                top: 20px;
+                right: 20px;
+            }
+            .swiper-button-next,
+            .swiper-button-prev {
+                position: fixed;
+            }
+            .swiper-button-next {
+                right: 50px; /* 画面右端に配置 */
+            }
+
+            .swiper-button-prev {
+                left: 50px; /* 画面左端に配置 */
+            }
+        }
+    }
+    
+
+</style>
+<body>
+    <div id="app">
+        <main id="main">
+            <!-- <div class="info">
+                <div class="search">
+                    <input class="search_name" type="text" placeholder="モンスター名で検索" v-model="searchQuery">
+                </div>
+            </div> -->
+            <div class="filters">
+                <ul class="list">
+                    <li class="item"><button @click="filterItems($event, '1')"><img src="./images/filter/d1.png" alt=""></button></li>
+                    <li class="item"><button @click="filterItems($event, '2')"><img src="./images/filter/d2.png" alt=""></button></li>
+                    <li class="item"><button @click="filterItems($event, '3')"><img src="./images/filter/d3.png" alt=""></button></li>
+                    <li class="item"><button @click="filterItems($event, '4')"><img src="./images/filter/d4.png" alt=""></button></li>
+                    <li class="item"><button @click="filterItems($event, '5')"><img src="./images/filter/s1.png" alt=""></button></li>
+                    <li class="item"><button @click="filterItems($event, '6')"><img src="./images/filter/s2.png" alt=""></button></li>
+                    <li class="item"><button @click="filterItems($event, '7')"><img src="./images/filter/s3.png" alt=""></button></li>
+                    <li class="item"><button @click="filterItems($event, '8')"><img src="./images/filter/crown.png" alt=""></button></li>
+                    <li class="item"><button @click="filterItems($event, 'all')">リセット</button></li>
+
+                </ul>
+            </div>
+            <div class="monsters">
+                <ul class="list">
+                    <li v-for="(item, index) in filteredItems" :key="item.ID" class="item" @click="openModal(index)">
+                        <img 
+                            :src="'./images/' + item.image" 
+                            :alt="item.name"
+                            :loading="index >= 9 ? 'lazy' : undefined"
+                        >
+                    </li>
+                </ul>
+            </div>
+            <div class="link_btn_fixed">
+                <div class="link_btn">
+                    <a href="./possession/">所持チェッカー</a>
+                </div>
+            </div>
+    
+            <!-- モーダル -->
+            <div id="modal" v-if="isModalOpen">
+                <div class="modal_inner">
+                    <div class="overlay" @click="closeModal"></div>
+                    <div class="swiper">
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide" v-for="(item, index) in filteredItems" :key="index">
+                                <img :src="'./images/' + item.image" :alt="item.name">
+                            </div>
+                        </div>
+                        <!-- ナビゲーションボタン -->
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                        <div class="modal_close" @click="closeModal"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    items: [],           // カードデータを格納する配列
+                    searchQuery: '',     // 検索クエリ
+                    isModalOpen: false,  // モーダルの表示フラグ
+                    currentIndex: 0,     // 現在表示しているスライドのインデックス
+                    filteredItems: []    // フィルタリングされたアイテムのリスト
+
+                };
+            },
+            // computed: {
+            //     // 検索クエリに基づいてフィルタリング
+            //     filteredItems() {
+            //         return this.items.filter(item =>
+            //             item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+            //         );
+            //     }
+            // },
+            methods: {
+                async fetchData() {
+                    try {
+                        const response = await fetch('./api/cards.php');
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        const data = await response.json();
+                        this.items = data;
+                        console.log(data);
+                        this.filterItems(null, 'all'); // データ取得後にフィルタリングを呼び出す
+                    } catch (error) {
+                        console.error('Failed to fetch data', error);
+                    }
+                },
+                openModal(index) {
+                    this.currentIndex = index;
+                    this.isModalOpen = true;
+                    this.$nextTick(() => {
+                        // Swiperのインスタンスを初期化
+                        new Swiper('.swiper', {
+                            loop: true,
+                            initialSlide: index,
+                            navigation: {
+                                nextEl: '.swiper-button-next',
+                                prevEl: '.swiper-button-prev',
+                            },
+                            spaceBetween: 20,
+                        });
+                    });
+                },
+                closeModal() {
+                    this.isModalOpen = false;
+                },
+                // アイテムをフィルタリングするメソッド
+                filterItems(event, criteria) {
+                    if (event) {
+                        // 全てのボタンから selected クラスを削除
+                        const buttons = document.querySelectorAll('.filter button');
+                        buttons.forEach(button => button.classList.remove('selected'));
+
+                        // event.target が存在する場合のみクラスを追加
+                        if (event.target) {
+                            const selectedButton = event.target;
+                            selectedButton.classList.add('selected');
+                        }
+                    }
+                    this.filteredItems = this.items.filter(item => item.rare === criteria);
+                    
+                    if (criteria === 'all') {
+                        this.filteredItems = this.items;  // 全てのアイテムを表示
+                    }
+                }
+            },
+            mounted() {
+                this.fetchData(); // データを取得
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

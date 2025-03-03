@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <!-- Swiper JS -->
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+</head>
+<style>
+    *{
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+    ul{
+        li{
+            list-style-type: none;
+        }
+    }
+    html,body{
+        font-size: 62.5%;
+    }
+    #main{
+        width: 96vw;
+        max-width: 750px;
+        margin: 0 auto;
+    }
+    .monsters{
+        margin-bottom: 50px;
+        .list{
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+        .item{
+            position: relative;
+            width: calc(96% / 3);
+            margin-right: 2%;
+            margin-bottom: 2%;
+            opacity: 0.4;
+            &:nth-child(3n){
+                margin-right: 0;
+            }
+            img{
+                width: 100%;
+            }
+            &.checked{
+                opacity: 1;
+            }
+        }
+    }
+    .select_pack{
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-top: 30px;
+        margin-bottom: 30px;
+        button{
+            position: relative;
+            background-color: #3373BE;
+            border: none;
+            outline:none;
+            width: calc(96% / 2);
+            height: 40px;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        &:hover{
+            &::after{
+                content: "";
+                position: absolute;
+                bottom: -10px;  /* ボタンの下に配置 */
+                left: 50%;
+                transform: translateX(-50%);
+                width: 0;
+                height: 0;
+                border-left: 10px solid transparent;
+                border-right: 10px solid transparent;
+                border-top: 10px solid #3373BE;  /* 三角形の色をボタンの色と一致させる */
+            }
+        }
+        .selected{
+            &::after{
+                content: "";
+                position: absolute;
+                bottom: -10px;  /* ボタンの下に配置 */
+                left: 50%;
+                transform: translateX(-50%);
+                width: 0;
+                height: 0;
+                border-left: 10px solid transparent;
+                border-right: 10px solid transparent;
+                border-top: 10px solid #3373BE;  /* 三角形の色をボタンの色と一致させる */
+            }
+        }
+    }
+    @media (min-width: 751px){
+        .monsters{
+            .item{
+                width: calc(92% / 5);
+                &:nth-child(3n){
+                    margin-right: 2%;
+                }
+                &:nth-child(5n){
+                    margin-right: 0;
+                }
+            }
+        }
+        .select_pack{
+            button{
+                width: calc(96% / 6);
+                margin-bottom: 0;
+            }
+        }
+    }
+    
+
+</style>
+<body>
+    <div id="app">
+        <main id="main">
+            <div class="info">
+                <!-- <div class="search">
+                    <input class="search_name" type="text" placeholder="モンスター名で検索" v-model="searchQuery">
+                </div> -->
+            </div>
+            <div class="select_pack">
+                <button class="selected" @click="filterItems($event, 'all')">全て</button>
+                <button @click="filterItems($event, 'show0')">共通</button>
+                <button @click="filterItems($event, 'show1')">ディアルガ</button>
+                <button @click="filterItems($event, 'show2')">パルキア</button>
+            </div>
+            <div class="monsters">
+                <ul class="list">
+                    <li v-for="(item, index) in filteredItems" 
+                    :key="item.ID"
+                    :class="['item', { checked: item.possession_flg == true }]"
+                    @click="toggleChecked(index)">
+                        <img 
+                            :src="'../../images/' + item.image" 
+                            :alt="item.name"
+                            :loading="index >= 9 ? 'lazy' : undefined"
+                        >
+                    </li>
+                </ul>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    items: [],           // カードデータを格納する配列
+                    searchQuery: '',     // 検索クエリ
+                    filteredItems: []    // フィルタリングされたアイテムのリスト
+                };
+            },
+            // computed: {
+            //     // 検索クエリに基づいてフィルタリング
+            //     filteredItems() {
+            //         return this.items.filter(item =>
+            //             item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+            //         );
+            //     }
+            // },
+            methods: {
+                async fetchData() {
+                    const displayPack = 4; // ここをページごとに変更可能
+                    try {
+                        const response = await fetch('../../api/cards.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ display_pack: displayPack }) // `display_pack` を JSON で送信
+                        });
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        const data = await response.json();
+                        console.log(data);
+                        this.items = data;
+                        // データ取得後に初期表示のフィルタリングを行う
+                        this.filterItems(null, 'all'); // データ取得後にフィルタリングを呼び出す
+                    } catch (error) {
+                        console.error('Failed to fetch data', error);
+                    }
+                },
+                async saveData(clickedCardId) {
+                    try {
+                        // クリックされた card_id のアイテムを取得
+                        const clickedItem = this.items.find(item => item.ID === clickedCardId);
+                        console.log(clickedItem);
+
+                        if (!clickedItem) {
+                            throw new Error('Item not found');
+                        }
+
+                        // クリックされたアイテムだけのデータを作成
+                        const payload = [{
+                            card_id: clickedItem.ID,
+                            possession: clickedItem.possession_flg,
+                        }];
+
+                        // 非同期でAPIへ保存
+                        const response = await fetch('../../api/save.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        // レスポンスがOKでない場合にエラーを投げる
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+
+                        // レスポンスのJSONを取得
+                        const result = await response.json();
+                        console.log(result);  // レスポンス結果をログに出力
+                    } catch (error) {
+                        console.error('Failed to save data', error);
+                    }
+                },
+
+                toggleChecked(index) {
+                    const item = this.filteredItems[index];
+                    // possession_flg をトグル
+                    item.possession_flg = !item.possession_flg;
+
+                    // saveData の完了後にデータ更新
+                    this.saveData(item.ID).then(() => {
+                        // 保存が完了した後の処理
+                        console.log('保存が完了しました');
+                    }).catch(error => {
+                        console.error('保存中にエラーが発生しました', error);
+                    });
+                },
+                // アイテムをフィルタリングするメソッド
+                filterItems(event, criteria) {
+                    if (event) {
+                        // 全てのボタンから selected クラスを削除
+                        const buttons = document.querySelectorAll('.select_pack button');
+                        buttons.forEach(button => button.classList.remove('selected'));
+
+                        // event.target が存在する場合のみクラスを追加
+                        if (event.target) {
+                            const selectedButton = event.target;
+                            selectedButton.classList.add('selected');
+                        }
+                    }
+                    
+                    if (criteria === 'all') {
+                        this.filteredItems = this.items;  // 全てのアイテムを表示
+                    
+                    } else if (criteria === 'show0') {
+                        this.filteredItems = this.items.filter(item => item.pack === "7");
+                    } else if (criteria === 'show1') {
+                        this.filteredItems = this.items.filter(item => item.pack === "8");
+                    } else if (criteria === 'show2') {
+                        this.filteredItems = this.items.filter(item => item.pack === "9");
+                    }
+                }
+                
+            },
+            mounted() {
+                this.fetchData();  // データを取得
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
