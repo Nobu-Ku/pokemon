@@ -11,7 +11,8 @@
     <script src="https://unpkg.com/vue@3"></script>
 
     <!-- Swiper JS -->
-<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
 </head>
 <body>
     <div id="app">
@@ -23,16 +24,15 @@
             </div> -->
             <div class="filters">
                 <ul class="list">
-                    <li class="item"><button @click="filterItems($event, '1')"><img src="./images/filter/d1.png" alt=""></button></li>
-                    <li class="item"><button @click="filterItems($event, '2')"><img src="./images/filter/d2.png" alt=""></button></li>
-                    <li class="item"><button @click="filterItems($event, '3')"><img src="./images/filter/d3.png" alt=""></button></li>
-                    <li class="item"><button @click="filterItems($event, '4')"><img src="./images/filter/d4.png" alt=""></button></li>
-                    <li class="item"><button @click="filterItems($event, '5')"><img src="./images/filter/s1.png" alt=""></button></li>
-                    <li class="item"><button @click="filterItems($event, '6')"><img src="./images/filter/s2.png" alt=""></button></li>
-                    <li class="item"><button @click="filterItems($event, '7')"><img src="./images/filter/s3.png" alt=""></button></li>
-                    <li class="item"><button @click="filterItems($event, '8')"><img src="./images/filter/crown.png" alt=""></button></li>
-                    <li class="item"><button @click="filterItems($event, 'all')">リセット</button></li>
-
+                    <li class="item" v-for="filter in filters" :key="filter.value">
+                        <button 
+                            @click="toggleFilter(filter.value)"
+                            :class="{ selected: isSelected(filter.value) }"
+                        >
+                            <img v-if="filter.image" :src="filter.image" alt="">
+                            <span v-else>{{ filter.label }}</span>
+                        </button>
+                    </li>
                 </ul>
             </div>
             <div class="monsters">
@@ -80,18 +80,31 @@
                     searchQuery: '',     // 検索クエリ
                     isModalOpen: false,  // モーダルの表示フラグ
                     currentIndex: 0,     // 現在表示しているスライドのインデックス
-                    filteredItems: []    // フィルタリングされたアイテムのリスト
-
+                    selectedFilters: [],   // 選択中のフィルタ（配列）
+                    filters: [
+                        { value: '1', image: './images/filter/d1.png' },
+                        { value: '2', image: './images/filter/d2.png' },
+                        { value: '3', image: './images/filter/d3.png' },
+                        { value: '4', image: './images/filter/d4.png' },
+                        { value: '5', image: './images/filter/s1.png' },
+                        { value: '6', image: './images/filter/s2.png' },
+                        { value: '7', image: './images/filter/s3.png' },
+                        { value: '8', image: './images/filter/crown.png' },
+                        { value: '9', label: 'PROMO' },
+                        { value: 'all', label: '全てを表示' }
+                    ]
                 };
             },
-            // computed: {
-            //     // 検索クエリに基づいてフィルタリング
-            //     filteredItems() {
-            //         return this.items.filter(item =>
-            //             item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
-            //         );
-            //     }
-            // },
+            computed: {
+                filteredItems() {
+                    if (this.selectedFilters.length === 0 || this.selectedFilters.includes('all')) {
+                        return this.items; // フィルタ未選択または「リセット」の場合、全アイテム表示
+                    }
+                    return this.items.filter(item => 
+                        this.selectedFilters.some(rare => item.rare.includes(rare))
+                    );
+                }
+            },
             methods: {
                 async fetchData() {
                     try {
@@ -99,10 +112,7 @@
                         if (!response.ok) {
                             throw new Error('Network response was not ok');
                         }
-                        const data = await response.json();
-                        this.items = data;
-                        console.log(data);
-                        this.filterItems(null, 'all'); // データ取得後にフィルタリングを呼び出す
+                        this.items = await response.json();
                     } catch (error) {
                         console.error('Failed to fetch data', error);
                     }
@@ -111,7 +121,6 @@
                     this.currentIndex = index;
                     this.isModalOpen = true;
                     this.$nextTick(() => {
-                        // Swiperのインスタンスを初期化
                         new Swiper('.swiper', {
                             loop: true,
                             initialSlide: index,
@@ -126,28 +135,23 @@
                 closeModal() {
                     this.isModalOpen = false;
                 },
-                // アイテムをフィルタリングするメソッド
-                filterItems(event, criteria) {
-                    if (event) {
-                        // 全てのボタンから selected クラスを削除
-                        const buttons = document.querySelectorAll('.filter button');
-                        buttons.forEach(button => button.classList.remove('selected'));
-
-                        // event.target が存在する場合のみクラスを追加
-                        if (event.target) {
-                            const selectedButton = event.target;
-                            selectedButton.classList.add('selected');
+                toggleFilter(filterValue) {
+                    if (filterValue === 'all') {
+                        this.selectedFilters = []; // 「リセット」ボタンなら選択解除
+                    } else {
+                        if (this.selectedFilters.includes(filterValue)) {
+                            this.selectedFilters = this.selectedFilters.filter(f => f !== filterValue); // 解除
+                        } else {
+                            this.selectedFilters.push(filterValue); // 追加
                         }
                     }
-                    this.filteredItems = this.items.filter(item => item.rare === criteria);
-                    
-                    if (criteria === 'all') {
-                        this.filteredItems = this.items;  // 全てのアイテムを表示
-                    }
+                },
+                isSelected(filterValue) {
+                    return this.selectedFilters.includes(filterValue);
                 }
             },
             mounted() {
-                this.fetchData(); // データを取得
+                this.fetchData();
             }
         }).mount('#app');
     </script>
