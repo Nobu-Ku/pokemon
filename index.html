@@ -24,13 +24,24 @@
             </div> -->
             <div class="filters">
                 <ul class="list">
-                    <li class="item" v-for="filter in filters" :key="filter.value">
+                    <li class="item" v-for="rfilter in rareFilters" :key="rfilter.value">
                         <button 
-                            @click="toggleFilter(filter.value)"
-                            :class="{ selected: isSelected(filter.value) }"
+                            @click="toggleRareFilter(rfilter.value)"
+                            :class="{ selected: isRareSelected(rfilter.value) }"
                         >
-                            <img v-if="filter.image" :src="filter.image" alt="">
-                            <span v-else>{{ filter.label }}</span>
+                            <img v-if="rfilter.image" :src="rfilter.image" alt="">
+                            <span v-else>{{ rfilter.label }}</span>
+                        </button>
+                    </li>
+                </ul>
+                <ul class="color_list">
+                    <li class="item" v-for="cfilter in colorFilters" :key="cfilter.value">
+                        <button 
+                            @click="toggleColorFilter(cfilter.value)"
+                            :class="{ selected: isColorSelected(cfilter.value) }"
+                        >
+                            <img v-if="cfilter.image" :src="cfilter.image" alt="">
+                            <span v-else>{{ cfilter.label }}</span>
                         </button>
                     </li>
                 </ul>
@@ -80,8 +91,9 @@
                     searchQuery: '',     // 検索クエリ
                     isModalOpen: false,  // モーダルの表示フラグ
                     currentIndex: 0,     // 現在表示しているスライドのインデックス
-                    selectedFilters: [],   // 選択中のフィルタ（配列）
-                    filters: [
+                    selectedRareFilters: [],   // 選択中のフィルタ（配列）
+                    selectedColorFilters: [],   // 選択中のフィルタ（配列）
+                    rareFilters: [
                         { value: '1', image: './images/filter/d1.png' },
                         { value: '2', image: './images/filter/d2.png' },
                         { value: '3', image: './images/filter/d3.png' },
@@ -92,17 +104,43 @@
                         { value: '8', image: './images/filter/crown.png' },
                         { value: '9', label: 'PROMO' },
                         { value: 'all', label: '全てを表示' }
+                    ],
+                    colorFilters: [
+                        { value: '1', image: './images/filter/type1.png' },
+                        { value: '2', image: './images/filter/type2.png' },
+                        { value: '3', image: './images/filter/type3.png' },
+                        { value: '4', image: './images/filter/type4.png' },
+                        { value: '5', image: './images/filter/type5.png' },
+                        { value: '6', image: './images/filter/type6.png' },
+                        { value: '7', image: './images/filter/type7.png' },
+                        { value: '8', image: './images/filter/type8.png' },
+                        { value: '9', image: './images/filter/type9.png' },
+                        { value: '10', image: './images/filter/type10.png' },
+                        { value: 'all', label: '全てを表示' }
                     ]
                 };
             },
             computed: {
                 filteredItems() {
-                    if (this.selectedFilters.length === 0 || this.selectedFilters.includes('all')) {
-                        return this.items; // フィルタ未選択または「リセット」の場合、全アイテム表示
+                    let filtered = this.items;
+                    // if (this.selectedRareFilters.length === 0 || this.selectedRareFilters.includes('all')) {
+                    //     return this.items; // フィルタ未選択または「リセット」の場合、全アイテム表示
+                    // }
+                    // return this.items.filter(item => 
+                    //     this.selectedRareFilters.some(rare => item.rare.includes(rare))
+                    // );
+
+                    if (this.selectedRareFilters.length > 0) {
+                        filtered = filtered.filter(item => {
+                            return this.selectedRareFilters.includes(item.rare);
+                        });
                     }
-                    return this.items.filter(item => 
-                        this.selectedFilters.some(rare => item.rare.includes(rare))
-                    );
+                    if (this.selectedColorFilters.length > 0) {
+                        filtered = filtered.filter(item => {
+                            return this.selectedColorFilters.includes(item.type);
+                        });
+                    }
+                    return filtered;
                 }
             },
             methods: {
@@ -135,19 +173,34 @@
                 closeModal() {
                     this.isModalOpen = false;
                 },
-                toggleFilter(filterValue) {
+                toggleRareFilter(filterValue) {
                     if (filterValue === 'all') {
-                        this.selectedFilters = []; // 「リセット」ボタンなら選択解除
+                        this.selectedRareFilters = []; // 「リセット」ボタンなら選択解除
                     } else {
-                        if (this.selectedFilters.includes(filterValue)) {
-                            this.selectedFilters = this.selectedFilters.filter(f => f !== filterValue); // 解除
+                        if (this.selectedRareFilters.includes(filterValue)) {
+                            this.selectedRareFilters = this.selectedRareFilters.filter(f => f !== filterValue); // 解除
                         } else {
-                            this.selectedFilters.push(filterValue); // 追加
+                            this.selectedRareFilters.push(filterValue); // 追加
                         }
                     }
                 },
-                isSelected(filterValue) {
-                    return this.selectedFilters.includes(filterValue);
+                toggleColorFilter(filterValue) {
+                    if (filterValue === 'all') {
+                        this.selectedColorFilters = []; // 「リセット」ボタンなら選択解除
+                    } else {
+                        if (this.selectedColorFilters.includes(filterValue)) {
+                            this.selectedColorFilters = this.selectedColorFilters.filter(f => f !== filterValue); // 解除
+                        } else {
+                            this.selectedColorFilters.push(filterValue); // 追加
+                        }
+                    }
+                    console.log(this.selectedColorFilters);
+                },
+                isRareSelected(filterValue) {
+                    return this.selectedRareFilters.includes(filterValue);
+                },
+                isColorSelected(filterValue) {
+                    return this.selectedColorFilters.includes(filterValue);
                 }
             },
             mounted() {
