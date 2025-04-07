@@ -148,124 +148,107 @@
         </main>
     </div>
     
-    <script>
-        const app = Vue.createApp({
-            data() {
-                return {
-                    items: [],           // カードデータを格納する配列
-                    searchQuery: '',     // 検索クエリ
-                    filteredItems: []    // フィルタリングされたアイテムのリスト
-                };
-            },
-            // computed: {
-            //     // 検索クエリに基づいてフィルタリング
-            //     filteredItems() {
-            //         return this.items.filter(item =>
-            //             item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
-            //         );
-            //     }
-            // },
-            methods: {
-                async fetchData() {
-                    const displayPack = 5; // ここをページごとに変更可能
-                    try {
-                        const response = await fetch('../../api/cards.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ display_pack: displayPack }) // `display_pack` を JSON で送信
-                        });
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        const data = await response.json();
-                        console.log(data);
-                        this.items = data;
-                        // データ取得後に初期表示のフィルタリングを行う
-                        this.filterItems(null, 'all'); // データ取得後にフィルタリングを呼び出す
-                    } catch (error) {
-                        console.error('Failed to fetch data', error);
-                    }
-                },
-                async saveData(clickedCardId) {
-                    try {
-                        // クリックされた card_id のアイテムを取得
-                        const clickedItem = this.items.find(item => item.ID === clickedCardId);
-                        console.log(clickedItem);
+  <!-- Vue CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 
-                        if (!clickedItem) {
-                            throw new Error('Item not found');
-                        }
+  <script>
+    const { createApp, ref, onMounted } = Vue
 
-                        // クリックされたアイテムだけのデータを作成
-                        const payload = [{
-                            card_id: clickedItem.ID,
-                            possession: clickedItem.possession_flg,
-                        }];
+    createApp({
+      setup() {
+        const items = ref([])
+        const filteredItems = ref([])
 
-                        // 非同期でAPIへ保存
-                        const response = await fetch('../../api/save.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(payload)
-                        });
+        const fetchData = async () => {
+          const displayPack = 5  // 必要に応じて変更
+          try {
+            const response = await fetch('../../api/cards.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ display_pack: displayPack })
+            })
+            if (!response.ok) throw new Error('Network response was not ok')
 
-                        // レスポンスがOKでない場合にエラーを投げる
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
+            const data = await response.json()
+            items.value = data
+            filterItems(null, 'all')
+          } catch (error) {
+            console.error('Failed to fetch data', error)
+          }
+        }
 
-                        // レスポンスのJSONを取得
-                        const result = await response.json();
-                        console.log(result);  // レスポンス結果をログに出力
-                    } catch (error) {
-                        console.error('Failed to save data', error);
-                    }
-                },
+        const saveData = async (clickedCardId) => {
+          try {
+            const clickedItem = items.value.find(item => item.ID === clickedCardId)
+            if (!clickedItem) throw new Error('Item not found')
 
-                toggleChecked(index) {
-                    const item = this.filteredItems[index];
-                    // possession_flg をトグル
-                    item.possession_flg = !item.possession_flg;
+            const payload = [{
+              card_id: clickedItem.ID,
+              possession: clickedItem.possession_flg
+            }]
 
-                    // saveData の完了後にデータ更新
-                    this.saveData(item.ID).then(() => {
-                        // 保存が完了した後の処理
-                        console.log('保存が完了しました');
-                    }).catch(error => {
-                        console.error('保存中にエラーが発生しました', error);
-                    });
-                },
-                // アイテムをフィルタリングするメソッド
-                filterItems(event, criteria) {
-                    if (event) {
-                        // 全てのボタンから selected クラスを削除
-                        const buttons = document.querySelectorAll('.select_pack button');
-                        buttons.forEach(button => button.classList.remove('selected'));
+            const response = await fetch('../../api/save.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            })
 
-                        // event.target が存在する場合のみクラスを追加
-                        if (event.target) {
-                            const selectedButton = event.target;
-                            selectedButton.classList.add('selected');
-                        }
-                    }
-                    
-                    if (criteria === 'all') {
-                        this.filteredItems = this.items;  // 全てのアイテムを表示
-                    
-                    } else if (criteria === 'show0') {
-                        this.filteredItems = this.items.filter(item => item.pack === "6");
-                    }
-                }
-                
-            },
-            mounted() {
-                this.fetchData();  // データを取得
+            if (!response.ok) throw new Error('Network response was not ok')
+            const result = await response.json()
+            console.log(result)
+          } catch (error) {
+            console.error('Failed to save data', error)
+          }
+        }
+
+        const toggleChecked = (index) => {
+          const item = filteredItems.value[index]
+          item.possession_flg = !item.possession_flg
+          saveData(item.ID).then(() => {
+            console.log('保存が完了しました')
+          }).catch(error => {
+            console.error('保存中にエラーが発生しました', error)
+          })
+        }
+
+        const filterItems = (event, criteria) => {
+          if (event) {
+            const buttons = document.querySelectorAll('.select_pack button')
+            buttons.forEach(button => button.classList.remove('selected'))
+            if (event.target) {
+              event.target.classList.add('selected')
             }
-        }).mount('#app');
-    </script>
+          }
+
+          if (criteria === 'all') {
+            filteredItems.value = items.value
+          } else {
+            const packMap = {
+              show0: '1',
+              show1: '2',
+              show2: '3',
+              show3: '4'
+            }
+            filteredItems.value = items.value.filter(item => item.pack === packMap[criteria])
+          }
+        }
+
+        onMounted(() => {
+          fetchData()
+        })
+
+        return {
+          items,
+          filteredItems,
+          toggleChecked,
+          filterItems
+        }
+      }
+    }).mount('#app')
+  </script>
 </body>
 </html>
