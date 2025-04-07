@@ -179,7 +179,9 @@
 
             const data = await response.json()
             items.value = data
+            console.error(data);
             filterItems(null, 'all')
+            
           } catch (error) {
             console.error('Failed to fetch data', error)
           }
@@ -234,10 +236,9 @@
             filteredItems.value = items.value
           } else {
             const packMap = {
-              show0: '1',
-              show1: '2',
-              show2: '3',
-              show3: '4'
+              show0: '7',
+              show1: '8',
+              show2: '9',
             }
             filteredItems.value = items.value.filter(item => item.pack === packMap[criteria])
           }
