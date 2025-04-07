@@ -170,11 +170,10 @@
             })
             if (!response.ok) throw new Error('Network response was not ok')
 
-            const data = await response.json()
-            items.value = data
-            filterItems(null, 'all')
+            const data = await response.json();
+            items.value = data;
           } catch (error) {
-            console.error('Failed to fetch data', error)
+            console.error('Failed to fetch data', error);
           }
         }
 
@@ -214,28 +213,6 @@
           })
         }
 
-        const filterItems = (event, criteria) => {
-          if (event) {
-            const buttons = document.querySelectorAll('.select_pack button')
-            buttons.forEach(button => button.classList.remove('selected'))
-            if (event.target) {
-              event.target.classList.add('selected')
-            }
-          }
-
-          if (criteria === 'all') {
-            filteredItems.value = items.value
-          } else {
-            const packMap = {
-              show0: '1',
-              show1: '2',
-              show2: '3',
-              show3: '4'
-            }
-            filteredItems.value = items.value.filter(item => item.pack === packMap[criteria])
-          }
-        }
-
         onMounted(() => {
           fetchData()
         })
@@ -244,7 +221,6 @@
           items,
           filteredItems,
           toggleChecked,
-          filterItems
         }
       }
     }).mount('#app')
