@@ -172,6 +172,7 @@
 
             const data = await response.json();
             items.value = data;
+            filteredItems.value = items.value;
           } catch (error) {
             console.error('Failed to fetch data', error);
           }
