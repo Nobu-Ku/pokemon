@@ -156,8 +156,8 @@
 
     createApp({
       setup() {
-        const items = ref([])
-        const filteredItems = ref([])
+        const items = ref([]);
+        const filteredItems = ref([]);
 
         const fetchData = async () => {
           const displayPack = 5  // 必要に応じて変更
@@ -171,8 +171,9 @@
             })
             if (!response.ok) throw new Error('Network response was not ok')
 
-            const data = await response.json()
+            const data = await response.json();
             items.value = data
+            filteredItems.value = items.value;
           } catch (error) {
             console.error('Failed to fetch data', error)
           }
@@ -197,16 +198,15 @@
             })
 
             if (!response.ok) throw new Error('Network response was not ok')
-            const result = await response.json()
-            console.log(result)
+            const result = await response.json();
           } catch (error) {
             console.error('Failed to save data', error)
           }
         }
 
         const toggleChecked = (index) => {
-          const item = filteredItems.value[index]
-          item.possession_flg = !item.possession_flg
+          const item = filteredItems.value[index];
+          item.possession_flg = !item.possession_flg;
           saveData(item.ID).then(() => {
             console.log('保存が完了しました')
           }).catch(error => {
@@ -215,7 +215,7 @@
         }
 
         onMounted(() => {
-          fetchData()
+          fetchData();
         })
 
         return {

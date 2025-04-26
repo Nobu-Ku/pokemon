@@ -172,7 +172,8 @@
             if (!response.ok) throw new Error('Network response was not ok')
 
             const data = await response.json()
-            items.value = data
+            items.value = data;
+            filteredItems.value = items.value;
           } catch (error) {
             console.error('Failed to fetch data', error)
           }
@@ -198,7 +199,6 @@
 
             if (!response.ok) throw new Error('Network response was not ok')
             const result = await response.json()
-            console.log(result)
           } catch (error) {
             console.error('Failed to save data', error)
           }
@@ -208,7 +208,7 @@
           const item = filteredItems.value[index]
           item.possession_flg = !item.possession_flg
           saveData(item.ID).then(() => {
-            console.log('保存が完了しました')
+            console.log('保存が完了しました');
           }).catch(error => {
             console.error('保存中にエラーが発生しました', error)
           })
