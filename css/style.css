@@ -182,7 +182,14 @@ html, body {
   margin: 0 auto;
 }
 .filters .item {
+  display: flex;
   border: 1px solid #ccc;
+}
+.filters .item.selected {
+  border: 2px solid #000;
+}
+.filters .item.reset {
+  width: 100%;
 }
 .filters .item button {
   width: 100%;
@@ -198,27 +205,28 @@ html, body {
 .filters .item button:hover {
   opacity: 0.8;
 }
-.filters .item button.selected {
-  border: 2px solid #000;
-}
 .filters .item button span {
   font-size: 1.5rem;
 }
 .filters .color_list {
   width: 80%;
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 5px;
-  margin: 0 auto;
+  margin: 20px auto 0;
 }
 .filters .color_list .item {
-  border: 1px solid #ccc;
+  width: 9.2%;
 }
 .filters .color_list .item button {
   text-align: center;
 }
 .filters .color_list .item button img {
   width: 80%;
+}
+.filters .color_list .item.reset {
+  width: 100%;
 }
 
 .monsters {

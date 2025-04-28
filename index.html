@@ -31,8 +31,8 @@
               <span v-else>{{ typeF.label }}</span>
             </button>
           </li>
-          <li class="item">
-            <button @click="filterItems($event, 'all')">リセット</button>
+          <li class="item reset">
+            <button @click="filterItems($event, 'all')"><span>リセット</span></button>
           </li>
        </ul>
       </div>
@@ -86,6 +86,8 @@
       setup() {
         const items = ref([]);
         const filteredItems = ref([]);
+        const selectedRare = ref();
+        const selectedType = ref();
         const isModalOpen = ref(false);
         const currentIndex = ref(0);
 
@@ -130,30 +132,45 @@
 
         const filterItems = (event, criteria, value='') => {
           if (event) {
-            // 全ての filters 内の button から selected クラスを除去
-            const buttons = document.querySelectorAll('.filters button');
-            buttons.forEach(btn => btn.classList.remove('selected'));
+            // 押されたボタンに一番近い li.item を探す
+            const clickedItem = event.target.closest('.item');
+            if (!clickedItem) return; // 万が一itemじゃないとき安全に抜ける
 
-            // 押されたボタンに selected クラスを付与
-            if (event.target) {
-              event.target.classList.add('selected');
+            // どっちのリストかを判定
+            const parentList = clickedItem.closest('ul');
+
+            if (parentList.classList.contains('list')) {
+              // listグループの時
+              const items = parentList.querySelectorAll('.item');
+              items.forEach(item => item.classList.remove('selected'));
+              clickedItem.classList.add('selected');
+            } else if (parentList.classList.contains('color_list')) {
+              // color_listグループの時
+              const items = parentList.querySelectorAll('.item');
+              items.forEach(item => item.classList.remove('selected'));
+              clickedItem.classList.add('selected');
             }
           }
 
           if (criteria === 'all') {
             filteredItems.value = items.value;
           }
+          // rareかtypeかに応じて、条件をセット
           if (value === 'filterRare') {
-            // rare か type かに応じてフィルタ
-            filteredItems.value = items.value.filter(item =>
-              item.rare === criteria
-            )
+            selectedRare.value = criteria;
           } else if (value === 'filterType') {
-            // rare か type かに応じてフィルタ
-            filteredItems.value = items.value.filter(item =>
-              item.type === criteria
-            )
+            selectedType.value = criteria;
+          } else if (criteria === 'all') {
+            selectedRare.value = '';
+            selectedType.value = '';
           }
+
+          // 条件両方でフィルタ
+          filteredItems.value = items.value.filter(item => {
+            const matchRare = selectedRare.value ? item.rare === selectedRare.value : true;
+            const matchType = selectedType.value ? item.type === selectedType.value : true;
+            return matchRare && matchType;
+          });
         }
 
         const openModal = (index) => {
