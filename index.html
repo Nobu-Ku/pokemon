@@ -18,7 +18,7 @@
       <div class="filters">
         <ul class="list">
           <li class="item" v-for="(rareF, index) in rareFilters" :key="index">
-            <button @click="filterItems($event, rareF.criteria)">
+            <button @click="filterItems($event, rareF.criteria, 'filterRare')">
               <img v-if="rareF.image" :src="rareF.image" alt="">
               <span v-else>{{ rareF.label }}</span>
             </button>
@@ -26,7 +26,7 @@
         </ul>
         <ul class="color_list">
           <li class="item" v-for="(typeF, index) in typeFilters" :key="index">
-            <button @click="filterItems($event, typeF.criteria)">
+            <button @click="filterItems($event, typeF.criteria, 'filterType')">
               <img v-if="typeF.image" :src="typeF.image" alt="">
               <span v-else>{{ typeF.label }}</span>
             </button>
@@ -37,7 +37,7 @@
        </ul>
       </div>
 
-      <div class="monsters">
+      <div class="monsters all">
         <ul class="list">
           <li v-for="(item, index) in filteredItems" :key="item.ID" class="item" @click="openModal(index)">
             <img 
@@ -84,10 +84,10 @@
 
     createApp({
       setup() {
-        const items = ref([])
-        const filteredItems = ref([])
-        const isModalOpen = ref(false)
-        const currentIndex = ref(0)
+        const items = ref([]);
+        const filteredItems = ref([]);
+        const isModalOpen = ref(false);
+        const currentIndex = ref(0);
 
         const rareFilters = [
           { criteria: '1', image: './images/filter/d1.png' },
@@ -118,41 +118,48 @@
 
         const fetchData = async () => {
           try {
-            const response = await fetch('./api/cards.php')
-            if (!response.ok) throw new Error('Network response was not ok')
-            const data = await response.json()
-            items.value = data
-            filterItems(null, 'all')
+            const response = await fetch('./api/cards.php');
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+            items.value = data;
+            filterItems(null, 'all');
           } catch (error) {
-            console.error('Failed to fetch data', error)
+            console.error('Failed to fetch data', error);
           }
         }
 
-        const filterItems = (event, criteria) => {
+        const filterItems = (event, criteria, value='') => {
           if (event) {
             // 全ての filters 内の button から selected クラスを除去
-            const buttons = document.querySelectorAll('.filters button')
-            buttons.forEach(btn => btn.classList.remove('selected'))
+            const buttons = document.querySelectorAll('.filters button');
+            buttons.forEach(btn => btn.classList.remove('selected'));
 
             // 押されたボタンに selected クラスを付与
             if (event.target) {
-              event.target.classList.add('selected')
+              event.target.classList.add('selected');
             }
           }
 
           if (criteria === 'all') {
-            filteredItems.value = items.value
-          } else {
+            filteredItems.value = items.value;
+          }
+          if (value === 'filterRare') {
             // rare か type かに応じてフィルタ
             filteredItems.value = items.value.filter(item =>
-              item.rare === criteria || item.type === criteria
+              item.rare === criteria
+            )
+          } else if (value === 'filterType') {
+            // rare か type かに応じてフィルタ
+            filteredItems.value = items.value.filter(item =>
+              item.type === criteria
             )
           }
         }
 
         const openModal = (index) => {
-          currentIndex.value = index
-          isModalOpen.value = true
+          currentIndex.value = index;
+          isModalOpen.value = true;
+          console.log(isModalOpen.value);
 
           nextTick(() => {
             new Swiper('.swiper', {
@@ -168,11 +175,11 @@
         }
 
         const closeModal = () => {
-          isModalOpen.value = false
+          isModalOpen.value = false;
         }
 
         onMounted(() => {
-          fetchData()
+          fetchData();
         })
 
         return {
@@ -187,7 +194,7 @@
           closeModal
         }
       }
-    }).mount('#app')
+    }).mount('#app');
   </script>
 </body>
 </html>
