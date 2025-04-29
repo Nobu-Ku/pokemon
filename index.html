@@ -32,17 +32,23 @@
             </button>
           </li>
         </ul>
+        <div class="pack_list">
+          <select name="" id="" v-model="selectedPack">
+            <option value="">パックを選択</option>
+            <option v-for="(pack, index) in packFilters" :key="index" :value="pack.criteria">
+              {{ pack.name }}
+            </option>
+          </select>
+        </div>
         <div class="search">
             <input class="search_name" type="text" placeholder="モンスター名で検索" v-model="searchQuery">
-        </div>    
+        </div>
         <ul class="list">
           <li class="item reset">
             <button @click="filterItems($event, 'all')"><span>リセット</span></button>
           </li>
        </ul>
-       
       </div>
-
       <div class="monsters all">
         <ul class="list">
           <li v-for="(item, index) in filteredItems" :key="item.ID" class="item" @click="openModal(index)">
@@ -79,9 +85,6 @@
       </div>
     </main>
   </div>
-
-  <!-- Vue 3 CDN -->
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <!-- Swiper CDN -->
   <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 
@@ -94,6 +97,7 @@
         const filteredItems = ref([]);
         const selectedRare = ref();
         const selectedType = ref();
+        const selectedPack = ref('');
         const searchQuery = ref(); // 検索クエリを保持するデータプロパティ
         const isModalOpen = ref(false);
         const currentIndex = ref(0);
@@ -126,6 +130,15 @@
           { criteria: '10', image: './images/filter/type10.png' },
         ]
 
+        const packFilters = [
+          { criteria: '6', name: 'シャイニングハイ' },
+          { criteria: '5', name: '超克の光' },
+          { criteria: '4', name: '時空の激闘' },
+          { criteria: '3', name: '幻のいる島' },
+          { criteria: '2', name: '最強の遺伝子' },
+          { criteria: '1', name: 'PROMO' },
+        ]
+
         const fetchData = async () => {
           try {
             const response = await fetch('./api/cards.php');
@@ -147,7 +160,7 @@
             // どっちのリストかを判定
             const parentList = clickedItem.closest('ul');
 
-            if (parentList.classList.contains('list')) {
+            if (parentList.classList.contains('rare_list')) {
               // listグループの時
               const items = parentList.querySelectorAll('.item');
               items.forEach(item => item.classList.remove('selected'));
@@ -163,23 +176,30 @@
           if (criteria === 'all') {
             filteredItems.value = items.value;
           }
-          // rareかtypeかに応じて、条件をセット
+          // rareかtypeかpackに応じて、条件をセット
           if (value === 'filterRare') {
             selectedRare.value = criteria;
           } else if (value === 'filterType') {
             selectedType.value = criteria;
+          } else if (value === 'filterPack') {
+            // 選択されたパックは selectedPack に入っているのでここでは何もしない
+            selectedPack.value = criteria;
           } else if (criteria === 'all') {
             selectedRare.value = '';
             selectedType.value = '';
-          }
+            selectedPack.value = '';
 
+            // すべての .selected を外す
+            const selectedElements = document.querySelectorAll('.filters .item.selected');
+            selectedElements.forEach(el => el.classList.remove('selected'));
+          }
           // 条件両方でフィルタ
           let filtered = items.value.filter(item => {
             const matchRare = selectedRare.value ? item.rare === selectedRare.value : true;
             const matchType = selectedType.value ? item.type === selectedType.value : true;
-            return matchRare && matchType;
+            const matchPack = selectedPack.value ? item.display_pack == selectedPack.value : true;            
+            return matchRare && matchType && matchPack;
           });
-
           // さらに名前で絞り込み
           if (searchQuery.value) {
             filtered = filtered.filter(item => item.name.includes(searchQuery.value));
@@ -188,6 +208,10 @@
           filteredItems.value = filtered;
         }
 
+        watch(selectedPack, () => {
+          filterItems(null, ''); //selectedPackが変わったらフィルターを再実行
+        });
+
         watch(searchQuery, () => {
           filterItems(null, ''); // 検索入力が変わるたびにフィルター再実行
         });
@@ -195,7 +219,6 @@
         const openModal = (index) => {
           currentIndex.value = index;
           isModalOpen.value = true;
-          console.log(isModalOpen.value);
 
           nextTick(() => {
             new Swiper('.swiper', {
@@ -225,6 +248,8 @@
           currentIndex,
           rareFilters,
           typeFilters,
+          selectedPack,
+          packFilters,
           filterItems,
           openModal,
           closeModal,
