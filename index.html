@@ -16,7 +16,7 @@
   <div id="app">
     <main id="main">
       <div class="filters">
-        <ul class="list">
+        <ul class="rare_list">
           <li class="item" v-for="(rareF, index) in rareFilters" :key="index">
             <button @click="filterItems($event, rareF.criteria, 'filterRare')">
               <img v-if="rareF.image" :src="rareF.image" alt="">
@@ -31,10 +31,16 @@
               <span v-else>{{ typeF.label }}</span>
             </button>
           </li>
+        </ul>
+        <div class="search">
+            <input class="search_name" type="text" placeholder="モンスター名で検索" v-model="searchQuery">
+        </div>    
+        <ul class="list">
           <li class="item reset">
             <button @click="filterItems($event, 'all')"><span>リセット</span></button>
           </li>
        </ul>
+       
       </div>
 
       <div class="monsters all">
@@ -80,7 +86,7 @@
   <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 
   <script>
-    const { createApp, ref, onMounted, nextTick } = Vue
+    const { createApp, ref, watch, onMounted, nextTick } = Vue
 
     createApp({
       setup() {
@@ -88,8 +94,10 @@
         const filteredItems = ref([]);
         const selectedRare = ref();
         const selectedType = ref();
+        const searchQuery = ref(); // 検索クエリを保持するデータプロパティ
         const isModalOpen = ref(false);
         const currentIndex = ref(0);
+        
 
         const rareFilters = [
           { criteria: '1', image: './images/filter/d1.png' },
@@ -166,12 +174,23 @@
           }
 
           // 条件両方でフィルタ
-          filteredItems.value = items.value.filter(item => {
+          let filtered = items.value.filter(item => {
             const matchRare = selectedRare.value ? item.rare === selectedRare.value : true;
             const matchType = selectedType.value ? item.type === selectedType.value : true;
             return matchRare && matchType;
           });
+
+          // さらに名前で絞り込み
+          if (searchQuery.value) {
+            filtered = filtered.filter(item => item.name.includes(searchQuery.value));
+          }
+
+          filteredItems.value = filtered;
         }
+
+        watch(searchQuery, () => {
+          filterItems(null, ''); // 検索入力が変わるたびにフィルター再実行
+        });
 
         const openModal = (index) => {
           currentIndex.value = index;
@@ -208,7 +227,8 @@
           typeFilters,
           filterItems,
           openModal,
-          closeModal
+          closeModal,
+          searchQuery,
         }
       }
     }).mount('#app');
