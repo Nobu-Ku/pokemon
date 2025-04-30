@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <!-- Swiper JS -->
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <main id="main">
+            <div class="info">
+                <!-- <div class="search">
+                    <input class="search_name" type="text" placeholder="モンスター名で検索" v-model="searchQuery">
+                </div> -->
+            </div>
+            <div class="select_pack">
+                <button class="selected" @click="filterItems($event, 'all')">全て</button>
+                <button @click="filterItems($event, 'show0')">共通</button>
+                <button @click="filterItems($event, 'show1')">ソルガレオ</button>
+                <button @click="filterItems($event, 'show2')">ルナアーラ</button>
+            </div>
+            <div class="monsters">
+                <ul class="list">
+                    <li v-for="(item, index) in filteredItems" 
+                    :key="item.ID"
+                    :class="['item', { checked: item.possession_flg == true }]"
+                    @click="toggleChecked(index)">
+                        <img 
+                            :src="'../../images/' + item.image" 
+                            :alt="item.name"
+                            :loading="index >= 9 ? 'lazy' : undefined"
+                        >
+                    </li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+  <!-- Vue CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+  <script>
+    const { createApp, ref, onMounted } = Vue
+
+    createApp({
+      setup() {
+        const items = ref([])
+        const filteredItems = ref([])
+
+        const fetchData = async () => {
+          const displayPack = 7  // 必要に応じて変更
+          try {
+            const response = await fetch('../../api/cards.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ display_pack: displayPack })
+            })
+            if (!response.ok) throw new Error('Network response was not ok')
+
+            const data = await response.json()
+            items.value = data;
+            filterItems(null, 'all');
+            
+          } catch (error) {
+            console.error('Failed to fetch data', error)
+          }
+        }
+
+        const saveData = async (clickedCardId) => {
+          try {
+            const clickedItem = items.value.find(item => item.ID === clickedCardId)
+            if (!clickedItem) throw new Error('Item not found')
+
+            const payload = [{
+              card_id: clickedItem.ID,
+              possession: clickedItem.possession_flg
+            }]
+
+            const response = await fetch('../../api/save.php', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            })
+
+            if (!response.ok) throw new Error('Network response was not ok')
+            const result = await response.json()
+          } catch (error) {
+            console.error('Failed to save data', error)
+          }
+        }
+
+        const toggleChecked = (index) => {
+          const item = filteredItems.value[index]
+          item.possession_flg = !item.possession_flg
+          saveData(item.ID).then(() => {
+            console.log('保存が完了しました')
+          }).catch(error => {
+            console.error('保存中にエラーが発生しました', error)
+          })
+        }
+
+        const filterItems = (event, criteria) => {
+          if (event) {
+            const buttons = document.querySelectorAll('.select_pack button')
+            buttons.forEach(button => button.classList.remove('selected'))
+            if (event.target) {
+              event.target.classList.add('selected')
+            }
+          }
+
+          if (criteria === 'all') {
+            filteredItems.value = items.value
+          } else {
+            const packMap = {
+              show0: '12',
+              show1: '13',
+              show2: '14',
+            }
+            filteredItems.value = items.value.filter(item => item.pack === packMap[criteria])
+          }
+        }
+
+        onMounted(() => {
+          fetchData()
+        })
+
+        return {
+          items,
+          filteredItems,
+          toggleChecked,
+          filterItems
+        }
+      }
+    }).mount('#app')
+  </script>
+</body>
+</html>
