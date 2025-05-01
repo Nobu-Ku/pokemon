@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Document</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
     <script src="https://unpkg.com/vue@3"></script>
@@ -18,13 +17,89 @@
       <div class="info">
         <!-- 検索ボックスなど必要ならここに追加 -->
       </div>
-      <div class="select_pack">
+      <div class="select_pack select_pack_col5">
         <button class="selected" @click="filterItems($event, 'all')">全て</button>
         <button @click="filterItems($event, 'show0')">共通</button>
         <button @click="filterItems($event, 'show1')">ピカチュウ</button>
         <button @click="filterItems($event, 'show2')">ミュウツー</button>
         <button @click="filterItems($event, 'show3')">リザードン</button>
       </div>
+      <div class="possessions">
+        <div class="table table_all">
+          <div class="table_head">
+            <div class="table_cell table_pack">パック</div>
+            <div class="table_cell table_crown"><img src="/images/icon/icon-crown.png" alt=""></div>
+            <div class="table_cell table_check">チェック数</div>
+            <div class="table_cell table_per">所持率</div>
+          </div>
+          <div class="table_body">
+            <div class="table_cell table_pack">全カードの所持率</div>
+            <div class="table_cell table_crown">0 / 1</div>
+            <div class="table_cell table_check"><span>0</span> / 111</div>
+            <div class="table_cell table_per">0% </div>
+          </div>
+        </div>
+        <div class="table_wrap">
+          <div class="table table_rarity">
+            <div class="table_head">
+              <div class="table_cell">◆1</div>
+              <div class="table_cell">◆2</div>
+              <div class="table_cell">◆3</div>
+              <div class="table_cell">◆4</div>
+              <div class="table_cell">★1</div>
+              <div class="table_cell">★2</div>
+              <div class="table_cell">★3</div>
+              <div class="table_cell">＊1</div>
+              <div class="table_cell">＊2</div>
+            </div>
+            <div class="table_body">
+              <div class="table_cell">0 / 1</div>
+              <div class="table_cell">0 / 1</div>
+              <div class="table_cell">0 / 1</div>
+              <div class="table_cell">0 / 1</div>
+              <div class="table_cell">0 / 1</div>
+              <div class="table_cell">0 / 1</div>
+              <div class="table_cell">0 / 1</div>
+              <div class="table_cell">0 / 1</div>
+              <div class="table_cell">0 / 1</div>
+            </div>
+          </div>
+        </div>
+        <div class="table table_pack">
+          <div class="table_body">
+            <div class="table_cell table_pack">リザードン</div>
+            <div class="table_cell table_check"><span>0</span> / 111</div>
+            <div class="table_cell table_per">0% </div>
+          </div>
+        </div>
+        <div class="table_wrap">
+          <div class="table table_rarity">
+            <div class="table_head">
+              <div class="table_cell">◆1</div>
+              <div class="table_cell">◆2</div>
+              <div class="table_cell">◆3</div>
+              <div class="table_cell">◆4</div>
+              <div class="table_cell">★1</div>
+              <div class="table_cell">★2</div>
+              <div class="table_cell">★3</div>
+              <div class="table_cell">＊1</div>
+              <div class="table_cell">＊2</div>
+            </div>
+            <div class="table_body">
+              <div class="table_cell">10/10</div>
+              <div class="table_cell">10/10</div>
+              <div class="table_cell">10/10</div>
+              <div class="table_cell">10/10</div>
+              <div class="table_cell">10/10</div>
+              <div class="table_cell">10/10</div>
+              <div class="table_cell">10/10</div>
+              <div class="table_cell">10/10</div>
+              <div class="table_cell">10/10</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="monsters">
         <ul class="list">
           <li v-for="(item, index) in filteredItems" 
